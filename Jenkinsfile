@@ -33,4 +33,23 @@ pipeline {
             }
         }
     }
+    // ⭐ Slack Notifications
+    post {
+
+        started {
+            slackSend message: "🚀 Build STARTED: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+        }
+
+        success {
+            slackSend message: "✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+        }
+
+        failure {
+            slackSend message: "❌ FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+        }
+
+        unstable {
+            slackSend message: "⚠️ UNSTABLE: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+        }
+    }
 }
