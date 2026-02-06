@@ -49,13 +49,6 @@ pipeline {
                 message: "❌ FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER} ${env.BUILD_URL}"
             )
         }
-        started {
-            slackSend(
-                channel: '#devops-ensi', 
-                color: '#439FE0', 
-                message: "🚀 Build STARTED: ${env.JOB_NAME} #${env.BUILD_NUMBER} ${env.BUILD_URL}"
-            )
-        }
     }
 
 }
