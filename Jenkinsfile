@@ -37,21 +37,21 @@ pipeline {
     post {
         success {
             slackSend(
-                channel: '#builds', 
+                channel: '#devops-ensi', 
                 color: 'good', 
                 message: "✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} ${env.BUILD_URL}"
             )
         }
         failure {
             slackSend(
-                channel: '#builds', 
+                channel: '#devops-ensi', 
                 color: 'danger', 
                 message: "❌ FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER} ${env.BUILD_URL}"
             )
         }
         started {
             slackSend(
-                channel: '#builds', 
+                channel: '#devops-ensi', 
                 color: '#439FE0', 
                 message: "🚀 Build STARTED: ${env.JOB_NAME} #${env.BUILD_NUMBER} ${env.BUILD_URL}"
             )
