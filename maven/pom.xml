@@ -11,7 +11,7 @@
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.5.0</version>
         <configuration>
-          <archive>
+          <archive>         
             <manifest>
               <mainClass>maven.Hello</mainClass>
             </manifest>
@@ -39,7 +39,7 @@
         <!-- Bloque le build si vulnérabilité critique (CVSS >= 7) -->
         <failBuildOnCVSS>7</failBuildOnCVSS>
         <!-- Ignorer certains CVE connus si nécessaire -->
-        <suppressionFile>${project.basedir}/dependency-suppression.xml</suppressionFile>
+        <suppressionFile></suppressionFile>
         <!-- Analyse des dépendances directes et transitives -->
         <analyzeTransitive>true</analyzeTransitive>
         <!-- Mémoriser la base de données locale pour accélérer les scans -->
