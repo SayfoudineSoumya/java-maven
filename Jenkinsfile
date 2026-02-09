@@ -35,9 +35,11 @@ pipeline {
         stage('SonarQube Analysis') {
            steps {
                 dir('java-maven/maven') {
-                    withSonarQubeEnv('SonarQube') {
-                        sh 'mvn sonar:sonar'
-                    }
+                    sh ''' 
+                    mvn clean verify sonar:sonar 
+                    -Dsonar.projectKey=java-maven 
+                    -Dsonar.host.url=http://sonarqube:9000 
+                    '''
                 }
             }
         }
