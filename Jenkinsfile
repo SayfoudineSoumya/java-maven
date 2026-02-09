@@ -33,13 +33,12 @@ pipeline {
             }
         }
         stage('SonarQube Analysis') {
-            steps {
-                sh '''
-                mvn sonar:sonar \
-                -Dsonar.projectKey=myproject \
-                -Dsonar.host.url=http://sonarqube:9000 \
-                -Dsonar.login=TOKEN
-                '''
+           steps {
+                dir('java-maven/maven') {
+                    withSonarQubeEnv('SonarQube') {
+                        sh 'mvn sonar:sonar'
+                    }
+                }
             }
         }
     }
