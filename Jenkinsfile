@@ -17,7 +17,7 @@ pipeline {
 
         stage('Build & Security Scan') {
             steps {
-                dir('maven') {
+                dir('java-maven/maven') {
                     echo "Building Maven project"
                     sh 'mvn clean verify'
                 }
