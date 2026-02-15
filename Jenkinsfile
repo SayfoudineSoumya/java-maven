@@ -1,65 +1,75 @@
 pipeline {
-    agent {
-        docker {
-            // Image contenant Maven et Git
-            image 'my-maven-git:latest'
-            // Pour réutiliser le cache Maven local entre builds
-            //args '-v $HOME/.m2:/root/.m2'
-            args '-v maven-repo:/root/.m2'
-        }
+    agent any // Utilise le conteneur Jenkins actuel
+
+    environment {
+        IMAGE_NAME = "soumayasayfoudine/maven"
+        IMAGE_TAG  = "${BRANCH_NAME}-${GIT_COMMIT}"
     }
+
     stages {
+
         stage('Checkout') {
             steps {
-                // clean the directory
-                sh "rm -rf *"
-                // Checkout the Git repository
-                sh "git clone https://github.com/SayfoudineSoumya/java-maven.git"
+                // Récupérer automatiquement la branche qui déclenche le build
+                checkout scm
             }
         }
-        stage('Build') {
+
+        stage('Build & Security Scan') {
+            steps {
+                dir('maven') {
+                    echo "Building Maven project"
+                    sh 'mvn clean verify'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image $IMAGE_NAME:$IMAGE_TAG"
+                sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
+            }
+        }
+
+        stage('Login Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    echo "Logging in to Docker Hub"
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
             steps {
                 script {
-                    // Here, we can can run Maven commands
-                    def currentDir = pwd()
-                    echo "Current directory: ${currentDir}"
-                    // Navigate to the directory containing the Maven project
-                    dir('java-maven/maven') {
-                        // Run Maven commands
-                        sh 'mvn clean test package'
-                        sh "java -jar target/maven-0.0.1-SNAPSHOT.jar"
+                    echo "Pushing Docker image $IMAGE_NAME:$IMAGE_TAG"
+                    sh "docker push $IMAGE_NAME:$IMAGE_TAG"
+
+                    // Tag latest uniquement pour main ou release
+                    if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'release') {
+                        sh "docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest"
+                        sh "docker push $IMAGE_NAME:latest"
                     }
                 }
             }
         }
-        stage('SonarQube Analysis') {
-           steps {
-                dir('java-maven/maven') {
-                    sh ''' 
-                    mvn clean verify sonar:sonar 
-                    -Dsonar.projectKey=java-maven 
-                    -Dsonar.host.url=http://sonarqube:9000 
-                    '''
-                }
-            }
+    }
+
+    post {
+        always {
+            echo "Cleaning workspace..."
+            deleteDir()
+        }
+        success {
+            echo "Pipeline completed successfully!"
+        }
+        failure {
+            echo "Pipeline failed!"
         }
     }
-    // // ⭐ Slack Notifications
-    // post {
-    //     success {
-    //         slackSend(
-    //             channel: '#devops-ensi', 
-    //             color: 'good', 
-    //             message: "✅ Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} ${env.BUILD_URL}"
-    //         )
-    //     }
-    //     failure {
-    //         slackSend(
-    //             channel: '#devops-ensi', 
-    //             color: 'danger', 
-    //             message: "❌ Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER} ${env.BUILD_URL}"
-    //         )
-    //     }
-    // }
-
 }
