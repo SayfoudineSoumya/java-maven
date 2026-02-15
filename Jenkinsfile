@@ -16,6 +16,12 @@ pipeline {
         }
 
         stage('Build & Security Scan') {
+            agent {
+                docker {
+                    image 'maven:3.9-eclipse-temurin-17'
+                    args '-v $HOME/.m2:/root/.m2'
+                }
+            }
             steps {
                 dir('java-maven/maven') {
                     echo "Building Maven project"
